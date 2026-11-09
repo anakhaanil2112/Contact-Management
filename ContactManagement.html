@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
+
+    <style>
+        * {
+            color: black;
+        }
+
+        body {
+            background-color: rgb(205, 239, 240);
+        }
+
+        input {
+            background-color: rgb(10, 73, 73);
+        }
+
+        form {
+            width: 500px;
+            border: 2px solid rgb(23, 95, 119);
+            padding: 20px;
+            border-radius: 2%;
+            margin-left: 520px;
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: rgb(46, 111, 111);
+            margin-left: 180px;
+            width: 90px;
+        }
+
+        h1 {
+            margin-left: 520px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        table, tr, th,tbody,td {
+            background-color: rgb(44, 123, 123);
+            margin-top: 60px;
+            width: 800px;
+            margin-left: 350px;
+        }
+        #ser{
+            width: 500px;
+            margin-left: 520px;
+            margin-top: 40px;
+        }
+      
+    </style>
+
+    <title>Contact Management App</title>
+</head>
+
+<body>
+
+    <h1>Contact Management App</h1>
+
+    <form class="row g-3">
+
+        <div class="col-12">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name"
+            placeholder="Enter your Full Name" required>
+        </div>
+
+        <div class="col-12">
+            <label for="phn" class="form-label">Phone number</label>
+            <input type="text" class="form-control" id="phn"
+            placeholder="Enter your phone number" required>
+        </div>
+
+        <div class="col-12">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email"
+            placeholder="Enter your email" required>
+        </div>
+
+        <div class="col-12">
+            <button type="button" id="search" onclick="addContact()"
+            class="btn-solid theme-primary">Create</button>
+        </div>
+
+    </form>
+
+    <div class="form-field" id="ser">
+        <label for="search" class="form-label">Search Contact</label>
+        <input type="text" class="form-control" id="search"
+        placeholder="Search by name" onkeyup="displayContacts()">
+    </div>
+
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Phone number</th>
+                <th scope="col">Email</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="contactList"></tbody>
+
+    </table>
+
+    <script>
+
+        let contacts = JSON.parse(sessionStorage.getItem("contacts")) || [];
+
+        // Add Contact
+        function addContact() {
+
+            let name = document.getElementById("name").value;
+            let phone = document.getElementById("phn").value;
+            let email = document.getElementById("email").value;
+
+            if (name == "" || phone == "" || email == "") {
+                alert("Please fill all fields");
+                return;
+            }
+
+            let contact = {
+                id: Date.now(),
+                name: name,
+                phone: phone,
+                email: email
+            };
+
+            contacts.push(contact);
+
+            sessionStorage.setItem("contacts", JSON.stringify(contacts));
+
+            displayContacts();
+
+            document.getElementById("name").value = "";
+            document.getElementById("phn").value = "";
+            document.getElementById("email").value = "";
+        }
+
+
+        // Display Contacts
+        function displayContacts() {
+
+            let list = document.getElementById("contactList");
+
+            list.innerHTML = "";
+
+            let search = document.getElementById("search").value.toLowerCase();
+
+            contacts.forEach(function(contact) {
+
+                if (contact.name.toLowerCase().includes(search)) {
+
+                    let row = document.createElement("tr");
+
+                    let td1 = document.createElement("td");
+                    td1.innerHTML = contact.name;
+
+                    let td2 = document.createElement("td");
+                    td2.innerHTML = contact.phone;
+
+                    let td3 = document.createElement("td");
+                    td3.innerHTML = contact.email;
+
+                    let td4 = document.createElement("td");
+
+                    let editBtn = document.createElement("button");
+                    editBtn.innerHTML = "Edit";
+
+                    editBtn.onclick = function() {
+                        editContact(contact.id);
+                    };
+
+                    let deleteBtn = document.createElement("button");
+                    deleteBtn.innerHTML = "Delete";
+
+                    deleteBtn.onclick = function() {
+                        deleteContact(contact.id);
+                    };
+
+                    td4.appendChild(editBtn);
+                    td4.appendChild(deleteBtn);
+
+                    row.appendChild(td1);
+                    row.appendChild(td2);
+                    row.appendChild(td3);
+                    row.appendChild(td4);
+
+                    list.appendChild(row);
+                }
+
+            });
+
+        }
+
+
+        // Edit Contact
+        function editContact(id) {
+
+            let contact = contacts.find(function(c) {
+                return c.id == id;
+            });
+
+            let name = prompt("Enter name", contact.name);
+
+            if (name == null || name.trim() == "") return;
+
+            let phone = prompt("Enter phone", contact.phone);
+
+            if (phone == null || phone.trim() == "") return;
+
+            let email = prompt("Enter email", contact.email);
+
+            if (email == null || email.trim() == "") return;
+
+            contact.name = name;
+            contact.phone = phone;
+            contact.email = email;
+
+            sessionStorage.setItem("contacts", JSON.stringify(contacts));
+
+            displayContacts();
+        }
+
+
+        // Delete Contact
+        function deleteContact(id) {
+
+            if (confirm("Delete this contact?")) {
+
+                contacts = contacts.filter(function(c) {
+                    return c.id != id;
+                });
+
+                sessionStorage.setItem("contacts", JSON.stringify(contacts));
+
+                displayContacts();
+            }
+
+        }
+
+
+        // Initial Display
+        displayContacts();
+
+    </script>
+
+</body>
+</html>
